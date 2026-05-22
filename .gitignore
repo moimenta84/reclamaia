@@ -1,0 +1,30 @@
+# Laravel
+laravel/vendor/
+laravel/.env
+laravel/storage/app/documents/
+laravel/storage/logs/
+laravel/bootstrap/cache/
+laravel/node_modules/
+laravel/public/hot
+laravel/public/storage
+
+# Python
+python-service/venv/
+python-service/.env
+python-service/__pycache__/
+python-service/app/__pycache__/
+python-service/app/services/__pycache__/
+python-service/app/routes/__pycache__/
+python-service/*.pyc
+python-service/.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+
+# IDE
+.vscode/
+.idea/
+*.iml

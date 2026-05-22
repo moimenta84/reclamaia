@@ -1,0 +1,70 @@
+<?php
+
+namespace App\Services;
+
+use Stripe\Stripe;
+use Stripe\PaymentIntent;
+use Stripe\Refund;
+use Stripe\Customer;
+use Stripe\Subscription;
+
+class StripeService
+{
+    public function __construct()
+    {
+        Stripe::setApiKey(config('services.stripe.secret'));
+    }
+
+    public function createPaymentIntent(int $claimId, int $amountCents = 999, string $currency = 'eur'): PaymentIntent
+    {
+        return PaymentIntent::create([
+            'amount' => $amountCents,
+            'currency' => $currency,
+            'metadata' => ['claim_id' => $claimId],
+            'automatic_payment_methods' => ['enabled' => true],
+        ]);
+    }
+
+    public function refundPaymentIntent(string $paymentIntentId): Refund
+    {
+        return Refund::create(['payment_intent' => $paymentIntentId]);
+    }
+
+    public function createOrRetrieveCustomer(string $email, ?string $name = null): Customer
+    {
+        $existing = Customer::search(['query' => "email:'{$email}'"]);
+        if ($existing->data) {
+            return $existing->data[0];
+        }
+
+        return Customer::create(array_filter([
+            'email' => $email,
+            'name' => $name,
+        ]));
+    }
+
+    public function createSubscription(string $customerId, string $priceId): Subscription
+    {
+        return Subscription::create([
+            'customer' => $customerId,
+            'items' => [['price' => $priceId]],
+            'payment_behavior' => 'default_incomplete',
+            'expand' => ['latest_invoice.payment_intent'],
+        ]);
+    }
+
+    public function cancelSubscription(string $subscriptionId): Subscription
+    {
+        $sub = Subscription::retrieve($subscriptionId);
+        return $sub->cancel();
+    }
+
+    public function constructWebhookEvent(string $payload, string $signature): \Stripe\Event
+    {
+        return \Stripe\Webhook::constructEvent(
+            $payload,
+            $signature,
+            config('services.stripe.webhook_secret')
+        );
+    }
+}

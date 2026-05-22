@@ -1,0 +1,194 @@
+{
+  "name": "ReclamaIA — Dev Pipeline Autónomo",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 2 * * *" }]
+        }
+      },
+      "id": "cron-node",
+      "name": "Cron 02:00 CET",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "command": "cat {{ $env.TASKS_FILE_PATH }}"
+      },
+      "id": "ssh-read-tasks",
+      "name": "SSH: Leer tasks.md",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "credentials": { "sshPrivateKey": { "id": "ssh-cred-id", "name": "reclamaia-vps" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "const content = items[0].json.stdout;\nconst lines = content.split('\\n');\nconst nextTask = lines.find(l => l.match(/^- \\[ \\]/));\nif (!nextTask) { return [{ json: { taskId: null, taskDesc: 'NO_PENDING_TASKS' } }]; }\nconst taskId = nextTask.match(/T\\d+/)?.[0] ?? 'UNKNOWN';\nconst taskDesc = nextTask.replace(/^- \\[ \\]\\s*T\\d+\\s*/, '').replace(/\\[.*?\\]\\s*/g, '').trim();\nreturn [{ json: { taskId, taskDesc } }];"
+      },
+      "id": "code-parse-task",
+      "name": "Code: Parsear tarea",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [{ "value1": "={{ $json.taskDesc }}", "operation": "notEqual", "value2": "NO_PENDING_TASKS" }]
+        }
+      },
+      "id": "if-has-task",
+      "name": "IF: hay tarea pendiente",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "predefinedCredentialType",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [{
+            "name": "model",
+            "value": "claude-sonnet-4-6"
+          }, {
+            "name": "max_tokens",
+            "value": 8000
+          }, {
+            "name": "system",
+            "value": "Eres un desarrollador experto en Laravel 11 y Python FastAPI. El proyecto ReclamaIA está en /var/www/reclamaia/. Cuando generes código, usa el formato:\n\nFILE: ruta/relativa/archivo.php\n```php\n// código\n```\n\nGenera código completo y funcional. Sigue la arquitectura: laravel/ para web/auth/pagos, python-service/ para generación de documentos con Claude API."
+          }, {
+            "name": "messages",
+            "value": "=[{\"role\": \"user\", \"content\": \"Implementa la siguiente tarea del proyecto ReclamaIA:\\n\\nTarea: {{ $json.taskId }} — {{ $json.taskDesc }}\\n\\nGenera el código completo para esta tarea. Incluye todos los archivos necesarios con el formato FILE: ruta. El código debe ser production-ready y seguir las convenciones del proyecto.\"}]"
+          }]
+        },
+        "options": {}
+      },
+      "id": "http-claude-api",
+      "name": "HTTP: Claude API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = items[0].json.content[0].text;\nconst fileBlocks = [];\nconst regex = /FILE: ([^\\n]+)\\n```[a-z]*\\n([\\s\\S]*?)```/g;\nlet match;\nwhile ((match = regex.exec(response)) !== null) {\n  fileBlocks.push({ path: match[1].trim(), content: match[2] });\n}\nreturn fileBlocks.map(f => ({ json: f }));"
+      },
+      "id": "code-extract-files",
+      "name": "Code: Extraer archivos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "command": "=cat > {{ $env.VPS_PROJECT_PATH }}/{{ $json.path }} << 'RECLAMAIA_EOF'\n{{ $json.content }}\nRECLAMAIA_EOF"
+      },
+      "id": "ssh-write-files",
+      "name": "SSH: Escribir archivos",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [1450, 200],
+      "credentials": { "sshPrivateKey": { "id": "ssh-cred-id", "name": "reclamaia-vps" } }
+    },
+    {
+      "parameters": {
+        "command": "cd {{ $env.VPS_PROJECT_PATH }} && php artisan test --stop-on-failure 2>&1 && cd python-service && python -m pytest tests/ -x 2>&1; echo EXIT_CODE:$?"
+      },
+      "id": "ssh-run-tests",
+      "name": "SSH: Ejecutar tests",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [1650, 200],
+      "credentials": { "sshPrivateKey": { "id": "ssh-cred-id", "name": "reclamaia-vps" } }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [{ "value1": "={{ $json.stdout }}", "operation": "contains", "value2": "EXIT_CODE:0" }]
+        }
+      },
+      "id": "if-tests-pass",
+      "name": "IF: tests pasan",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1850, 200]
+    },
+    {
+      "parameters": {
+        "command": "=cd {{ $env.VPS_PROJECT_PATH }} && git add -A && git commit -m 'feat: {{ $('Code: Parsear tarea').item.json.taskId }} — {{ $('Code: Parsear tarea').item.json.taskDesc.substring(0, 60) }}' && git push origin main && php artisan optimize && systemctl restart reclamaia-python"
+      },
+      "id": "ssh-deploy",
+      "name": "SSH: Git commit + Deploy",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [2050, 150],
+      "credentials": { "sshPrivateKey": { "id": "ssh-cred-id", "name": "reclamaia-vps" } }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "=✅ ReclamaIA Pipeline\\n\\nTarea: {{ $('Code: Parsear tarea').item.json.taskId }}\\nDescripción: {{ $('Code: Parsear tarea').item.json.taskDesc.substring(0, 100) }}\\nEstado: COMPLETADA y desplegada\\nHora: {{ new Date().toLocaleString('es-ES', {timeZone: 'Europe/Madrid'}) }}"
+      },
+      "id": "telegram-success",
+      "name": "Telegram: Éxito",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [2250, 150],
+      "credentials": { "telegramApi": { "id": "telegram-cred-id", "name": "reclamaia-telegram" } }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "=❌ ReclamaIA Pipeline — FALLO\\n\\nTarea: {{ $('Code: Parsear tarea').item.json.taskId }}\\nError en tests. Sin commit.\\nRevisar manualmente.\\nHora: {{ new Date().toLocaleString('es-ES', {timeZone: 'Europe/Madrid'}) }}"
+      },
+      "id": "telegram-failure",
+      "name": "Telegram: Fallo",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [2050, 350],
+      "credentials": { "telegramApi": { "id": "telegram-cred-id", "name": "reclamaia-telegram" } }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "=ℹ️ ReclamaIA Pipeline\\n\\nNo hay tareas pendientes en tasks.md. Buen trabajo!"
+      },
+      "id": "telegram-no-tasks",
+      "name": "Telegram: Sin tareas",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1050, 400],
+      "credentials": { "telegramApi": { "id": "telegram-cred-id", "name": "reclamaia-telegram" } }
+    }
+  ],
+  "connections": {
+    "Cron 02:00 CET": { "main": [[{ "node": "SSH: Leer tasks.md", "type": "main", "index": 0 }]] },
+    "SSH: Leer tasks.md": { "main": [[{ "node": "Code: Parsear tarea", "type": "main", "index": 0 }]] },
+    "Code: Parsear tarea": { "main": [[{ "node": "IF: hay tarea pendiente", "type": "main", "index": 0 }]] },
+    "IF: hay tarea pendiente": {
+      "main": [
+        [{ "node": "HTTP: Claude API", "type": "main", "index": 0 }],
+        [{ "node": "Telegram: Sin tareas", "type": "main", "index": 0 }]
+      ]
+    },
+    "HTTP: Claude API": { "main": [[{ "node": "Code: Extraer archivos", "type": "main", "index": 0 }]] },
+    "Code: Extraer archivos": { "main": [[{ "node": "SSH: Escribir archivos", "type": "main", "index": 0 }]] },
+    "SSH: Escribir archivos": { "main": [[{ "node": "SSH: Ejecutar tests", "type": "main", "index": 0 }]] },
+    "SSH: Ejecutar tests": { "main": [[{ "node": "IF: tests pasan", "type": "main", "index": 0 }]] },
+    "IF: tests pasan": {
+      "main": [
+        [{ "node": "SSH: Git commit + Deploy", "type": "main", "index": 0 }],
+        [{ "node": "Telegram: Fallo", "type": "main", "index": 0 }]
+      ]
+    },
+    "SSH: Git commit + Deploy": { "main": [[{ "node": "Telegram: Éxito", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": [{ "name": "ReclamaIA" }]
+}
