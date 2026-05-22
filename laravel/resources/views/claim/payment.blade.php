@@ -15,16 +15,27 @@
             </table>
         </div>
 
-        {{-- Policy PDF upload (optional, premium quality boost) --}}
-        <div class="card p-3 mb-3 border-info">
-            <h6 class="mb-1">📎 Sube tu póliza para una carta más sólida <span class="badge bg-info">RECOMENDADO</span></h6>
-            <p class="text-muted small mb-2">La IA extraerá las cláusulas relevantes y las citará en tu carta. Opcional pero aumenta el impacto legal.</p>
-            <div id="policy-upload-area">
-                <input type="file" id="policy-pdf" accept=".pdf" class="form-control form-control-sm mb-2">
-                <button type="button" id="upload-policy-btn" class="btn btn-sm btn-outline-info">Analizar póliza</button>
-                <div id="policy-status" class="mt-2 small"></div>
+        {{-- Policy PDF upload — Pro subscribers only --}}
+        @auth
+            @if(auth()->user()->hasActiveSubscription())
+            <div class="card p-3 mb-3 border-info">
+                <h6 class="mb-1">📎 Sube tu póliza para una carta más sólida <span class="badge bg-primary">Pro</span></h6>
+                <p class="text-muted small mb-2">La IA extraerá las cláusulas relevantes y las citará en tu carta con número de artículo exacto.</p>
+                <div id="policy-upload-area">
+                    <input type="file" id="policy-pdf" accept=".pdf" class="form-control form-control-sm mb-2">
+                    <button type="button" id="upload-policy-btn" class="btn btn-sm btn-outline-info">Analizar póliza</button>
+                    <div id="policy-status" class="mt-2 small"></div>
+                </div>
             </div>
-        </div>
+            @else
+            <div class="card p-3 mb-3 bg-light">
+                <p class="small text-muted mb-0">
+                    💡 Con el <a href="{{ route('subscription.plans') }}">Plan Pro</a> puedes subir tu póliza PDF
+                    para que la carta cite las cláusulas exactas de tu contrato.
+                </p>
+            </div>
+            @endif
+        @endauth
 
         <div class="card p-4">
             <h5 class="mb-1">Pago seguro</h5>

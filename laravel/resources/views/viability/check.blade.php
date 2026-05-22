@@ -7,9 +7,9 @@
     <div class="col-lg-8">
 
         <div class="text-center mb-4">
-            <span class="badge bg-success fs-6 px-3 py-2 mb-2">GRATIS · Sin registro · Sin pago</span>
+            <span class="badge bg-primary fs-6 px-3 py-2 mb-2">Plan Pro — Análisis IA</span>
             <h2 class="fw-bold">¿Tiene viabilidad tu reclamación?</h2>
-            <p class="text-muted">Describe tu caso y nuestra IA te dirá en segundos si tienes posibilidades de éxito, qué base legal aplica y cómo redactarlo para maximizar el resultado.</p>
+            <p class="text-muted">Describe tu caso y nuestra IA te dirá si tienes posibilidades de éxito, qué base legal aplica y cómo redactarlo para maximizar el resultado.</p>
         </div>
 
         <div class="card p-4 mb-4">

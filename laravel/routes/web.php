@@ -12,14 +12,18 @@ use Illuminate\Support\Facades\Route;
 // Home
 Route::get('/', fn() => view('welcome'))->name('home');
 
-// Viability analysis (free, no login required)
-Route::get('/analizar', [ViabilityController::class, 'show'])->name('viability.show');
-Route::post('/analizar', [ViabilityController::class, 'analyze'])->name('viability.analyze');
-Route::get('/analizar/{claim}', [ViabilityController::class, 'forClaim'])->name('viability.for-claim');
+// Viability analysis — subscribers only
+Route::middleware(['auth', 'subscriber'])->group(function () {
+    Route::get('/analizar', [ViabilityController::class, 'show'])->name('viability.show');
+    Route::post('/analizar', [ViabilityController::class, 'analyze'])->name('viability.analyze');
+    Route::get('/analizar/{claim}', [ViabilityController::class, 'forClaim'])->name('viability.for-claim');
+});
 
-// Policy PDF upload
-Route::post('/poliza/{claim}/subir', [PolicyController::class, 'upload'])->name('policy.upload');
-Route::get('/poliza/{claim}/analisis', [PolicyController::class, 'analysis'])->name('policy.analysis');
+// Policy PDF upload — subscribers only
+Route::middleware(['auth', 'subscriber'])->group(function () {
+    Route::post('/poliza/{claim}/subir', [PolicyController::class, 'upload'])->name('policy.upload');
+    Route::get('/poliza/{claim}/analisis', [PolicyController::class, 'analysis'])->name('policy.analysis');
+});
 
 // Claim flow (public)
 Route::get('/reclamar', [ClaimController::class, 'create'])->name('claim.create');

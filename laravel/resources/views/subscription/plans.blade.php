@@ -26,7 +26,9 @@
                         <li>✅ Un documento por pago</li>
                         <li>✅ Descarga Word y PDF</li>
                         <li>✅ Base legal Ley 50/1980</li>
-                        <li class="text-muted">❌ Sin historial guardado</li>
+                        <li class="text-muted">❌ Sin análisis de viabilidad</li>
+                        <li class="text-muted">❌ Sin extracción de póliza</li>
+                        <li class="text-muted">❌ Sin escalada automática</li>
                     </ul>
                     <a href="{{ route('claim.create') }}" class="btn btn-outline-primary mt-auto">Generar ahora</a>
                 </div>
@@ -38,9 +40,11 @@
                     <p class="display-6 fw-bold">29,99 <small class="fs-5 text-muted">€/mes</small></p>
                     <ul class="list-unstyled">
                         <li>✅ Reclamaciones ilimitadas</li>
-                        <li>✅ Historial completo</li>
-                        <li>✅ Re-descarga sin coste adicional</li>
-                        <li>✅ Soporte prioritario</li>
+                        <li>✅ Historial completo y re-descarga</li>
+                        <li>✅ <strong>Análisis de viabilidad IA</strong> (probabilidad de éxito)</li>
+                        <li>✅ <strong>Extracción de cláusulas de póliza PDF</strong></li>
+                        <li>✅ <strong>Escalada automática a DGSFP a 30 días</strong></li>
+                        <li>✅ Cartas con referencias exactas a tu póliza</li>
                     </ul>
                     @if(!$hasSubscription)
                         <button id="subscribe-btn" class="btn btn-primary mt-auto">Suscribirme — 29,99 €/mes</button>
