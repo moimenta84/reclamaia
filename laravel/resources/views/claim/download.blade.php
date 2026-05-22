@@ -29,6 +29,35 @@
                     Se incluye la referencia a la Ley 50/1980 de Contrato de Seguro y las directrices de la DGSFP.
                 </div>
 
+                <hr>
+
+                {{-- Escalation tracker --}}
+                @if($claim->escalation_status === 'none' || !$claim->sent_to_insurer_at)
+                    <div class="card p-3 bg-light text-start">
+                        <h6>📬 Seguimiento automático</h6>
+                        <p class="small text-muted mb-2">
+                            Cuando envíes la carta, márcalo aquí. Si la aseguradora no responde en 30 días,
+                            ReclamaIA genera automáticamente la carta de escalada a la DGSFP y te avisa.
+                        </p>
+                        @auth
+                        <form method="POST" action="{{ route('claim.mark-sent', $claim) }}">
+                            @csrf
+                            <button class="btn btn-sm btn-outline-success">He enviado la carta a la aseguradora</button>
+                        </form>
+                        @else
+                            <a href="{{ route('register') }}" class="btn btn-sm btn-outline-secondary">Crear cuenta para activar seguimiento</a>
+                        @endauth
+                    </div>
+                @elseif($claim->escalation_status === 'dgsfp_escalated')
+                    <div class="alert alert-info text-start mt-3">
+                        <strong>⚖️ Carta de escalada generada</strong> — La aseguradora no respondió en 30 días.
+                        Se ha generado la carta de escalada a la DGSFP.
+                        @if($claim->escalation_document_path)
+                            <br><a href="{{ route('claim.download.escalation', $claim) }}" class="btn btn-sm btn-info mt-2">Descargar carta de escalada</a>
+                        @endif
+                    </div>
+                @endif
+
                 @guest
                     <hr>
                     <h5>¿Quieres guardar esta reclamación?</h5>

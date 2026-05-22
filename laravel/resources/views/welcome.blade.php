@@ -10,10 +10,13 @@
             Describe tu problema en lenguaje normal. ReclamaIA redacta la carta formal de reclamación
             con base legal, lista para enviar al Defensor del Asegurado o a la DGSFP.
         </p>
-        <a href="{{ route('claim.create') }}" class="btn btn-primary btn-lg px-5 py-3">
-            Generar mi reclamación — 9,99 €
+        <a href="{{ route('viability.show') }}" class="btn btn-success btn-lg px-5 py-3 me-2">
+            Analizar mi caso gratis →
         </a>
-        <p class="text-muted small mt-2">Pago único por documento. Sin suscripción obligatoria.</p>
+        <a href="{{ route('claim.create') }}" class="btn btn-outline-primary btn-lg px-4 py-3">
+            Generar directamente — 9,99 €
+        </a>
+        <p class="text-muted small mt-2">Análisis gratuito · Sin registro · Sin compromiso</p>
     </div>
 </div>
 

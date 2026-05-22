@@ -5,6 +5,20 @@
 @section('content')
 <div class="row justify-content-center">
     <div class="col-lg-7">
+
+        {{-- Viability inline badge (shown if coming from /analizar) --}}
+        @if(request('viability_score'))
+        <div class="alert alert-{{ request('viability_score') === 'alta' ? 'success' : (request('viability_score') === 'media' ? 'warning' : 'danger') }} d-flex align-items-center mb-3">
+            <span class="me-2 fs-5">
+                {{ request('viability_score') === 'alta' ? '🟢' : (request('viability_score') === 'media' ? '🟡' : '🔴') }}
+            </span>
+            <div>
+                <strong>Viabilidad {{ strtoupper(request('viability_score')) }}</strong> —
+                Tu caso ha sido analizado. Completa el formulario para generar la carta formal.
+            </div>
+        </div>
+        @endif
+
         <div class="card p-4">
             <h2 class="mb-1">Genera tu reclamación</h2>
             <p class="text-muted mb-4">Rellena el formulario con los datos de tu caso. Solo te llevará 2 minutos.</p>

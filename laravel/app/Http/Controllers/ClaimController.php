@@ -63,6 +63,32 @@ class ClaimController extends Controller
         return response()->download($path, "reclamacion_{$claim->id}.pdf");
     }
 
+    public function markAsSent(Claim $claim)
+    {
+        abort_unless(
+            auth()->check() && ($claim->user_id === auth()->id()),
+            403
+        );
+
+        if (!$claim->sent_to_insurer_at) {
+            $claim->update(['sent_to_insurer_at' => now()]);
+        }
+
+        return back()->with('success', 'Perfecto. Te avisaremos automáticamente si la aseguradora no responde en 30 días.');
+    }
+
+    public function downloadEscalation(Claim $claim)
+    {
+        $this->authorizeDownload($claim);
+
+        abort_unless($claim->escalation_document_path, 404, 'Carta de escalada no disponible');
+
+        $path = storage_path('app/' . $claim->escalation_document_path);
+        abort_unless(file_exists($path), 404);
+
+        return response()->download($path, "escalada_dgsfp_{$claim->id}.pdf");
+    }
+
     private function authorizeDownload(Claim $claim): void
     {
         // Allow if authenticated owner, or if claim id is in session (anonymous flow)

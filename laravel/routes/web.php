@@ -4,11 +4,22 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClaimController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PolicyController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\ViabilityController;
 use Illuminate\Support\Facades\Route;
 
 // Home
 Route::get('/', fn() => view('welcome'))->name('home');
+
+// Viability analysis (free, no login required)
+Route::get('/analizar', [ViabilityController::class, 'show'])->name('viability.show');
+Route::post('/analizar', [ViabilityController::class, 'analyze'])->name('viability.analyze');
+Route::get('/analizar/{claim}', [ViabilityController::class, 'forClaim'])->name('viability.for-claim');
+
+// Policy PDF upload
+Route::post('/poliza/{claim}/subir', [PolicyController::class, 'upload'])->name('policy.upload');
+Route::get('/poliza/{claim}/analisis', [PolicyController::class, 'analysis'])->name('policy.analysis');
 
 // Claim flow (public)
 Route::get('/reclamar', [ClaimController::class, 'create'])->name('claim.create');
@@ -20,7 +31,11 @@ Route::get('/pago/{claim}/completado', [PaymentController::class, 'success'])->n
 // Downloads (authenticated or in session)
 Route::get('/descargar/{claim}/word', [ClaimController::class, 'downloadWord'])->name('claim.download.word');
 Route::get('/descargar/{claim}/pdf', [ClaimController::class, 'downloadPdf'])->name('claim.download.pdf');
+Route::get('/descargar/{claim}/escalada', [ClaimController::class, 'downloadEscalation'])->name('claim.download.escalation');
 Route::get('/descargar/{claim}', fn($claim) => view('claim.download', ['claim' => \App\Models\Claim::findOrFail($claim)]))->name('claim.download');
+
+// Mark claim as sent to insurer (activates 30-day escalation tracking)
+Route::post('/reclamacion/{claim}/enviada', [ClaimController::class, 'markAsSent'])->name('claim.mark-sent')->middleware('auth');
 
 // Auth
 Route::middleware('guest')->group(function () {

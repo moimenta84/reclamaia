@@ -24,12 +24,20 @@ class Claim extends Model
         'claimant_phone',
         'claimant_address',
         'policy_number',
+        'policy_pdf_path',
+        'policy_clauses',
         'status',
+        'viability_score',
+        'viability_probability',
+        'viability_analysis',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'viability_analysis' => 'array',
+        'policy_clauses' => 'array',
+        'viability_probability' => 'integer',
     ];
 
     public function user(): BelongsTo

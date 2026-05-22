@@ -15,6 +15,17 @@
             </table>
         </div>
 
+        {{-- Policy PDF upload (optional, premium quality boost) --}}
+        <div class="card p-3 mb-3 border-info">
+            <h6 class="mb-1">📎 Sube tu póliza para una carta más sólida <span class="badge bg-info">RECOMENDADO</span></h6>
+            <p class="text-muted small mb-2">La IA extraerá las cláusulas relevantes y las citará en tu carta. Opcional pero aumenta el impacto legal.</p>
+            <div id="policy-upload-area">
+                <input type="file" id="policy-pdf" accept=".pdf" class="form-control form-control-sm mb-2">
+                <button type="button" id="upload-policy-btn" class="btn btn-sm btn-outline-info">Analizar póliza</button>
+                <div id="policy-status" class="mt-2 small"></div>
+            </div>
+        </div>
+
         <div class="card p-4">
             <h5 class="mb-1">Pago seguro</h5>
             <p class="text-muted small mb-3">El documento se genera inmediatamente tras confirmar el pago.</p>
@@ -51,6 +62,41 @@ const card = elements.create('card', {
     hidePostalCode: true,
 });
 card.mount('#card-element');
+
+// Policy PDF upload
+document.getElementById('upload-policy-btn')?.addEventListener('click', async () => {
+    const fileInput = document.getElementById('policy-pdf');
+    const status = document.getElementById('policy-status');
+    const btn = document.getElementById('upload-policy-btn');
+
+    if (!fileInput.files.length) {
+        status.innerHTML = '<span class="text-warning">Selecciona un PDF primero.</span>';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Analizando póliza...';
+    status.innerHTML = '<span class="text-muted">Extrayendo cláusulas relevantes...</span>';
+
+    const formData = new FormData();
+    formData.append('policy_pdf', fileInput.files[0]);
+    formData.append('_token', '{{ csrf_token() }}');
+
+    const res = await fetch('{{ route('policy.upload', $claim) }}', {
+        method: 'POST',
+        body: formData,
+    });
+    const data = await res.json();
+
+    if (data.status === 'success' && data.clauses?.clausulas_clave?.length) {
+        const count = data.clauses.clausulas_clave.length;
+        status.innerHTML = `<span class="text-success">✅ ${count} cláusula(s) extraída(s). Se incluirán en tu carta.</span>`;
+    } else {
+        status.innerHTML = `<span class="text-info">ℹ️ ${data.message || 'Póliza guardada.'}</span>`;
+    }
+    btn.disabled = false;
+    btn.textContent = 'Analizar otra póliza';
+});
 
 document.getElementById('payment-form').addEventListener('submit', async (e) => {
     e.preventDefault();

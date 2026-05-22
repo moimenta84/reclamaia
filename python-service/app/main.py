@@ -5,6 +5,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes.generate import router as generate_router
+from app.routes.analyze import router as analyze_router
+from app.routes.extract_policy import router as extract_router
+from app.routes.escalate import router as escalate_router
 
 app = FastAPI(title="ReclamaIA Python Service", version="1.0.0")
 
@@ -16,6 +19,9 @@ app.add_middleware(
 )
 
 app.include_router(generate_router, prefix="/api")
+app.include_router(analyze_router, prefix="/api")
+app.include_router(extract_router, prefix="/api")
+app.include_router(escalate_router, prefix="/api")
 
 
 @app.get("/health")

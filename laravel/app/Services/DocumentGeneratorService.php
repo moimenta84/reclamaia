@@ -42,6 +42,8 @@ class DocumentGeneratorService
                         'address' => $claim->claimant_address,
                     ],
                     'policy_number' => $claim->policy_number,
+                    'policy_clauses' => $claim->policy_clauses,
+                    'viability_analysis' => $claim->viability_analysis,
                 ],
             ]);
 
