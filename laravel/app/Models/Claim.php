@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Claim extends Model
 {
+    use HasFactory;
     const STATUS_PENDING = 'pending';
     const STATUS_PROCESSING = 'processing';
     const STATUS_COMPLETED = 'completed';
@@ -30,6 +32,12 @@ class Claim extends Model
         'viability_score',
         'viability_probability',
         'viability_analysis',
+        'signaturit_id',
+        'signed_at',
+        'sent_to_insurer_at',
+        'escalation_status',
+        'escalation_sent_at',
+        'escalation_document_path',
     ];
 
     protected $casts = [
@@ -38,6 +46,9 @@ class Claim extends Model
         'viability_analysis' => 'array',
         'policy_clauses' => 'array',
         'viability_probability' => 'integer',
+        'signed_at'           => 'datetime',
+        'sent_to_insurer_at'  => 'datetime',
+        'escalation_sent_at'  => 'datetime',
     ];
 
     public function user(): BelongsTo

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head><meta charset="UTF-8"><title>Tu reclamación está lista</title></head>
 <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -11,7 +11,7 @@
 </div>
 <p style="color: #888; font-size: 12px;">
     <strong>Aviso legal:</strong> Este documento es orientativo. Consulte con un abogado para casos complejos.<br>
-    ReclamaIA — <a href="{{ config('app.url') }}">reclamaia.es</a>
+    Reclama — <a href="{{ config('app.url') }}">Reclama.es</a>
 </p>
 </body>
 </html>

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Error al generar el documento')
 
@@ -13,7 +13,7 @@
                 <strong>Tu pago será reembolsado automáticamente en las próximas 24 horas.</strong><br>
                 Recibirás un email de confirmación en la dirección que proporcionaste.
             </div>
-            <p class="text-muted small">Si tienes alguna duda, escríbenos a <a href="mailto:soporte@reclamaia.es">soporte@reclamaia.es</a></p>
+            <p class="text-muted small">Si tienes alguna duda, escríbenos a <a href="mailto:soporte@Reclama.es">soporte@Reclama.es</a></p>
             <a href="{{ route('claim.create') }}" class="btn btn-primary mt-2">Volver a intentarlo</a>
         </div>
     </div>

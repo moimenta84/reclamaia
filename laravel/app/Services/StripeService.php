@@ -12,11 +12,25 @@ class StripeService
 {
     public function __construct()
     {
-        Stripe::setApiKey(config('services.stripe.secret'));
+        if (!class_exists(Stripe::class)) {
+            return;
+        }
+        $key = config('services.stripe.secret');
+        if (!empty($key)) {
+            Stripe::setApiKey($key);
+        }
+    }
+
+    private function assertConfigured(): void
+    {
+        if (empty(config('services.stripe.secret'))) {
+            throw new \RuntimeException('STRIPE_SECRET no configurado en .env');
+        }
     }
 
     public function createPaymentIntent(int $claimId, int $amountCents = 999, string $currency = 'eur'): PaymentIntent
     {
+        $this->assertConfigured();
         return PaymentIntent::create([
             'amount' => $amountCents,
             'currency' => $currency,
@@ -27,11 +41,13 @@ class StripeService
 
     public function refundPaymentIntent(string $paymentIntentId): Refund
     {
+        $this->assertConfigured();
         return Refund::create(['payment_intent' => $paymentIntentId]);
     }
 
     public function createOrRetrieveCustomer(string $email, ?string $name = null): Customer
     {
+        $this->assertConfigured();
         $existing = Customer::search(['query' => "email:'{$email}'"]);
         if ($existing->data) {
             return $existing->data[0];
@@ -45,6 +61,7 @@ class StripeService
 
     public function createSubscription(string $customerId, string $priceId): Subscription
     {
+        $this->assertConfigured();
         return Subscription::create([
             'customer' => $customerId,
             'items' => [['price' => $priceId]],
@@ -55,6 +72,7 @@ class StripeService
 
     public function cancelSubscription(string $subscriptionId): Subscription
     {
+        $this->assertConfigured();
         $sub = Subscription::retrieve($subscriptionId);
         return $sub->cancel();
     }

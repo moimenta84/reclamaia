@@ -41,7 +41,7 @@
                     <ul class="list-unstyled">
                         <li>✅ Reclamaciones ilimitadas</li>
                         <li>✅ Historial completo y re-descarga</li>
-                        <li>✅ <strong>Análisis de viabilidad IA</strong> (probabilidad de éxito)</li>
+                        <li>✅ <strong>Análisis de viabilidad</strong> (probabilidad de éxito)</li>
                         <li>✅ <strong>Extracción de cláusulas de póliza PDF</strong></li>
                         <li>✅ <strong>Escalada automática a DGSFP a 30 días</strong></li>
                         <li>✅ Cartas con referencias exactas a tu póliza</li>

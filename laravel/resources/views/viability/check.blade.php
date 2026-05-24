@@ -1,15 +1,15 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
-@section('title', 'Analiza tu caso gratis — ReclamaIA')
+@section('title', 'Analiza tu caso gratis — Reclama')
 
 @section('content')
 <div class="row justify-content-center">
     <div class="col-lg-8">
 
         <div class="text-center mb-4">
-            <span class="badge bg-primary fs-6 px-3 py-2 mb-2">Plan Pro — Análisis IA</span>
+            <span class="badge bg-primary fs-6 px-3 py-2 mb-2">Plan Pro — Análisis de viabilidad</span>
             <h2 class="fw-bold">¿Tiene viabilidad tu reclamación?</h2>
-            <p class="text-muted">Describe tu caso y nuestra IA te dirá si tienes posibilidades de éxito, qué base legal aplica y cómo redactarlo para maximizar el resultado.</p>
+            <p class="text-muted">Describe tu caso y nuestro sistema te dirá si tienes posibilidades de éxito, qué base legal aplica y cómo redactarlo para maximizar el resultado.</p>
         </div>
 
         <div class="card p-4 mb-4">
@@ -40,7 +40,7 @@
         <div id="results-panel" class="d-none">
             <div id="loading-state" class="card p-4 text-center d-none">
                 <div class="spinner-border text-success mb-3 mx-auto"></div>
-                <p class="text-muted">Analizando tu caso con IA legal española...</p>
+                <p class="text-muted">Analizando tu caso...</p>
             </div>
 
             <div id="analysis-result" class="d-none">

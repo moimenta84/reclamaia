@@ -12,7 +12,7 @@ class PaymentController extends Controller
 {
     public function __construct(private StripeService $stripe) {}
 
-    public function show(Claim $claim): View
+    public function show(Claim $claim): View|\Illuminate\Http\RedirectResponse
     {
         // Subscribers skip payment
         if (auth()->check() && auth()->user()->hasActiveSubscription()) {

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Tu reclamación está lista')
 
@@ -24,7 +24,7 @@
                 </div>
 
                 <div class="alert alert-warning text-start">
-                    <strong>Aviso legal:</strong> Este documento es orientativo y ha sido generado por inteligencia artificial.
+                    <strong>Aviso legal:</strong> Este documento es orientativo y generado automáticamente.
                     Consulte con un abogado especializado para casos complejos.
                     Se incluye la referencia a la Ley 50/1980 de Contrato de Seguro y las directrices de la DGSFP.
                 </div>
@@ -37,7 +37,7 @@
                         <h6>📬 Seguimiento automático</h6>
                         <p class="small text-muted mb-2">
                             Cuando envíes la carta, márcalo aquí. Si la aseguradora no responde en 30 días,
-                            ReclamaIA genera automáticamente la carta de escalada a la DGSFP y te avisa.
+                            Reclama genera automáticamente la carta de escalada a la DGSFP y te avisa.
                         </p>
                         @auth
                         <form method="POST" action="{{ route('claim.mark-sent', $claim) }}">
@@ -69,7 +69,7 @@
             <div class="card p-5">
                 <div class="spinner-border text-primary mb-3 mx-auto" style="width:3rem;height:3rem"></div>
                 <h3>Generando tu documento...</h3>
-                <p class="text-muted">La IA está redactando tu reclamación. Esto puede tardar hasta 30 segundos.</p>
+                <p class="text-muted">El sistema está redactando tu reclamación. Esto puede tardar hasta 30 segundos.</p>
                 <script>setTimeout(() => location.reload(), 5000);</script>
             </div>
         @elseif($claim->status === 'failed')
@@ -77,7 +77,7 @@
                 <div class="fs-1 mb-3">❌</div>
                 <h3>Error al generar el documento</h3>
                 <p class="text-muted">Ha ocurrido un problema técnico. <strong>Tu pago será reembolsado automáticamente en 24 horas.</strong></p>
-                <p class="text-muted small">Si tienes alguna duda, escríbenos a soporte@reclamaia.es</p>
+                <p class="text-muted small">Si tienes alguna duda, escríbenos a soporte@Reclama.es</p>
                 <a href="{{ route('claim.create') }}" class="btn btn-primary mt-2">Volver a intentarlo</a>
             </div>
         @else

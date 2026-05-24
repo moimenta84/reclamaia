@@ -1,16 +1,63 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BaremoController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ClaimController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LegalController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PolicyController;
+use App\Http\Controllers\DeceasedInsuranceController;
+use App\Http\Controllers\SeoController;
+use App\Http\Controllers\SignaturitController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\ToolsController;
 use App\Http\Controllers\ViabilityController;
 use Illuminate\Support\Facades\Route;
 
 // Home
 Route::get('/', fn() => view('welcome'))->name('home');
+
+// Sitemap & robots
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/robots.txt',  [SitemapController::class, 'robots'])->name('robots');
+
+// SEO landing pages
+Route::get('/reclamaciones',            [SeoController::class, 'reclamaciones'])->name('seo.reclamaciones');
+Route::get('/reclamar-seguro',          [SeoController::class, 'reclamarSeguro'])->name('seo.reclamar-seguro');
+Route::get('/reclamar-seguro-hogar',    [SeoController::class, 'hogar'])->name('seo.hogar');
+Route::get('/reclamar-seguro-coche',    [SeoController::class, 'coche'])->name('seo.coche');
+Route::get('/reclamar-seguro-vida',     [SeoController::class, 'vida'])->name('seo.vida');
+Route::get('/reclamar-seguro-salud',    [SeoController::class, 'salud'])->name('seo.salud');
+Route::get('/buscar-seguros-fallecidos',[SeoController::class, 'fallecidos'])->name('seo.fallecidos');
+Route::get('/danos-desastres-naturales',[SeoController::class, 'desastres'])->name('seo.desastres');
+
+// Blog
+Route::get('/blog',        [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
+
+// Guías
+Route::get('/guias',        [BlogController::class, 'guiasIndex'])->name('guias.index');
+Route::get('/guias/{slug}', [BlogController::class, 'guia'])->name('guias.show');
+
+// Legal pages (public)
+Route::prefix('legal')->name('legal.')->group(function () {
+    Route::get('/aviso-legal', [LegalController::class, 'avisoLegal'])->name('aviso');
+    Route::get('/privacidad', [LegalController::class, 'privacidad'])->name('privacidad');
+    Route::get('/cookies', [LegalController::class, 'cookies'])->name('cookies');
+    Route::get('/terminos', [LegalController::class, 'terminos'])->name('terminos');
+    Route::get('/reembolso', [LegalController::class, 'reembolso'])->name('reembolso');
+    Route::post('/consent', [LegalController::class, 'recordConsent'])->name('consent');
+});
+
+// Baremo de tráfico — public tool
+Route::get('/baremo', [BaremoController::class, 'show'])->name('tools.baremo.show');
+Route::post('/baremo/calcular', [BaremoController::class, 'calculate'])->name('tools.baremo.calculate');
+
+// Signaturit webhook — public (validated inside controller)
+Route::post('/webhook/signaturit', [SignaturitController::class, 'webhook'])->name('webhook.signaturit');
 
 // Viability analysis — subscribers only
 Route::middleware(['auth', 'subscriber'])->group(function () {
@@ -60,3 +107,35 @@ Route::middleware('auth')->group(function () {
     Route::post('/suscripcion', [SubscriptionController::class, 'subscribe'])->name('subscription.subscribe');
     Route::delete('/suscripcion', [SubscriptionController::class, 'cancel'])->name('subscription.cancel');
 });
+
+// Pro tools — subscriber only
+Route::middleware(['auth', 'subscriber'])->prefix('herramientas')->name('tools.')->group(function () {
+    Route::get('/', [ToolsController::class, 'index'])->name('index');
+    Route::get('/ocr', [ToolsController::class, 'showOcr'])->name('ocr.show');
+    Route::post('/ocr', [ToolsController::class, 'processOcr'])->name('ocr.process');
+    Route::get('/valoracion', [ToolsController::class, 'showValoracion'])->name('valoracion.show');
+    Route::post('/valoracion', [ToolsController::class, 'calculateValoracion'])->name('valoracion.calculate');
+    Route::get('/jurisprudencia', [ToolsController::class, 'showJurisprudencia'])->name('jurisprudencia.show');
+    Route::post('/jurisprudencia', [ToolsController::class, 'searchJurisprudencia'])->name('jurisprudencia.search');
+});
+
+// Digital signature — auth + own claim
+Route::middleware('auth')->group(function () {
+    Route::get('/reclamacion/{claim}/firma', [SignaturitController::class, 'showSign'])
+        ->name('tools.firma.show');
+    Route::post('/reclamacion/{claim}/firma', [SignaturitController::class, 'requestSign'])
+        ->name('tools.firma.request');
+});
+
+// Seguros del fallecido — RCSCF (subscriber only)
+Route::middleware(['auth', 'subscriber'])
+    ->prefix('herramientas/seguros-fallecido')
+    ->name('tools.fallecido.')
+    ->group(function () {
+        Route::get('/',                                    [DeceasedInsuranceController::class, 'index'])->name('index');
+        Route::get('/nuevo',                               [DeceasedInsuranceController::class, 'create'])->name('create');
+        Route::post('/',                                   [DeceasedInsuranceController::class, 'store'])->name('store');
+        Route::get('/{search}',                            [DeceasedInsuranceController::class, 'show'])->name('show');
+        Route::patch('/{search}',                          [DeceasedInsuranceController::class, 'update'])->name('update');
+        Route::delete('/{search}',                         [DeceasedInsuranceController::class, 'destroy'])->name('destroy');
+    });
